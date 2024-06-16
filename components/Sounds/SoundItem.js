@@ -5,14 +5,15 @@ import {
   StyleSheet,
   Pressable,
   Modal,
-  Switch,
   TouchableOpacity,
 } from "react-native";
 import { Audio } from "expo-av";
+import Slider from "@react-native-community/slider";
 
 function SoundItem() {
   const [playbackObject, setPlaybackObject] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(50); // Default volume level set to 50%
   const [modalVisible, setModalVisible] = useState(false);
 
   const handlePress = async () => {
@@ -26,32 +27,60 @@ function SoundItem() {
         );
         setPlaybackObject(sound);
         setIsPlaying(true);
+        sound.setIsLoopingAsync(true); // Loop the sound
         sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
+        sound.setVolumeAsync(volume / 100); // Set the initial volume
       } catch (error) {
         console.error("Error loading sound", error);
       }
     }
-    setModalVisible(true); // Ensure modal opens whether new or existing playback object.
-  };
-
-  const togglePlayback = async () => {
-    if (!playbackObject) return; // Guard against null object reference.
-
-    if (isPlaying) {
-      await playbackObject.pauseAsync();
-      setIsPlaying(false);
-    } else {
-      await playbackObject.playAsync();
-      setIsPlaying(true);
-    }
+    setModalVisible(true);
   };
 
   const onPlaybackStatusUpdate = (status) => {
     if (!status.isPlaying && status.didJustFinish) {
-      playbackObject.unloadAsync();
-      setPlaybackObject(null);
-      setIsPlaying(false);
-      setModalVisible(false); // Ensure the modal closes when the audio finishes playing.
+      if (playbackObject) {
+        // Check if playbackObject is not null
+        playbackObject
+          .unloadAsync()
+          .then(() => {
+            setPlaybackObject(null);
+            setIsPlaying(false);
+            setModalVisible(false);
+          })
+          .catch((error) => console.error("Error unloading audio", error));
+      } else {
+        // Handle the case where playbackObject is null if necessary
+        console.log("Playback object is already null.");
+      }
+    }
+  };
+
+  const handleVolumeChange = async (value) => {
+    setVolume(value);
+    if (playbackObject) {
+      // Ensure playbackObject is not null before setting volume
+      await playbackObject.setVolumeAsync(value / 100);
+      if (value === 0 && isPlaying) {
+        await playbackObject.pauseAsync();
+        setIsPlaying(false); // Automatically pause if volume is set to 0
+      } else if (value > 0 && !isPlaying) {
+        await playbackObject.playAsync();
+        setIsPlaying(true); // Automatically play if volume is increased from 0
+      }
+    }
+  };
+
+  const togglePlayback = async () => {
+    if (playbackObject) {
+      // Check if playbackObject is not null before toggling playback
+      if (isPlaying) {
+        await playbackObject.pauseAsync();
+        setIsPlaying(false);
+      } else {
+        await playbackObject.playAsync();
+        setIsPlaying(true);
+      }
     }
   };
 
@@ -68,7 +97,7 @@ function SoundItem() {
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
-          setModalVisible(false); // Allows the modal to be closed using Android's back button.
+          setModalVisible(false);
         }}
       >
         <TouchableOpacity
@@ -78,12 +107,15 @@ function SoundItem() {
         >
           <View style={styles.modalView}>
             <Text>{isPlaying ? "Music is playing" : "Music is stopped"}</Text>
-            <Switch
-              trackColor={{ false: "#767577", true: "#81b0ff" }}
-              thumbColor={isPlaying ? "#f5dd4b" : "#f4f3f4"}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={togglePlayback}
-              value={isPlaying}
+            <Slider
+              style={{ width: 200, height: 40 }}
+              minimumValue={0}
+              maximumValue={100}
+              minimumTrackTintColor="#307ecc"
+              maximumTrackTintColor="#000000"
+              step={1}
+              value={volume}
+              onValueChange={handleVolumeChange}
             />
           </View>
         </TouchableOpacity>
@@ -119,7 +151,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
     alignItems: "center",
-    // backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalView: {
     margin: 20,

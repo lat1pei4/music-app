@@ -13,8 +13,8 @@ export default function App() {
       <StatusBar style="auto" />
       <NavigationContainer>
         <Drawer.Navigator>
-          <Drawer.Screen name="MainScreen" component={MainScreen} />
           <Drawer.Screen name="ManageSounds" component={ManageSounds} />
+          <Drawer.Screen name="MainScreen" component={MainScreen} />
         </Drawer.Navigator>
       </NavigationContainer>
     </>
