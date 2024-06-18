@@ -33,6 +33,18 @@
         {
           "microphonePermissions": true
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ],
+      [
+        "expo-asset",
+        {
+          "assets": ["../assets/background/autumn_noon.mp4"]
+        }
       ]
     ]
   }

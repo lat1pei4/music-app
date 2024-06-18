@@ -1,7 +1,7 @@
 import SoundContainer from "../components/Sounds/SoundContainer";
 
-function ManageSounds() {
+function ManageSoundsScreen() {
   return <SoundContainer />;
 }
 
-export default ManageSounds;
+export default ManageSoundsScreen;

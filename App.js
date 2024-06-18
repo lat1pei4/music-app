@@ -3,7 +3,8 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import { NavigationContainer } from "@react-navigation/native";
 
 import MainScreen from "./screens/MainScreen";
-import ManageSounds from "./screens/ManageSounds";
+import ManageSoundsScreen from "./screens/ManageSoundsScreen";
+import OptionScreen from "./screens/OptionScreen";
 
 const Drawer = createDrawerNavigator();
 
@@ -13,8 +14,16 @@ export default function App() {
       <StatusBar style="auto" />
       <NavigationContainer>
         <Drawer.Navigator>
-          <Drawer.Screen name="ManageSounds" component={ManageSounds} />
-          <Drawer.Screen name="MainScreen" component={MainScreen} />
+          <Drawer.Screen
+            name="ManageSoundsScreen"
+            component={ManageSoundsScreen}
+          />
+          <Drawer.Screen
+            name="MainScreen"
+            component={MainScreen}
+            options={{ headerShown: false }}
+          />
+          <Drawer.Screen name="DebugMode" component={OptionScreen} />
         </Drawer.Navigator>
       </NavigationContainer>
     </>
