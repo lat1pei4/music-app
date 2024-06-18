@@ -9,17 +9,27 @@ import {
 } from "react-native";
 import { Audio } from "expo-av";
 import Slider from "@react-native-community/slider";
+import { AnimatedCircularProgress } from "react-native-circular-progress";
 
 function SoundItem() {
   const [playbackObject, setPlaybackObject] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(50); // Default volume level set to 50%
+  const [volume, setVolume] = useState(0); // Default volume level set to 50%
   const [modalVisible, setModalVisible] = useState(false);
 
   const handlePress = async () => {
     if (!playbackObject) {
       try {
-        const { sound } = await Audio.Sound.createAsync(
+        await Audio.setAudioModeAsync({
+          staysActiveInBackground: true,
+          // interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: true,
+          // interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
+          playsInSilentModeIOS: true,
+        });
+
+        let { sound } = await Audio.Sound.createAsync(
           {
             uri: "http://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3",
           },
@@ -71,26 +81,27 @@ function SoundItem() {
     }
   };
 
-  const togglePlayback = async () => {
-    if (playbackObject) {
-      // Check if playbackObject is not null before toggling playback
-      if (isPlaying) {
-        await playbackObject.pauseAsync();
-        setIsPlaying(false);
-      } else {
-        await playbackObject.playAsync();
-        setIsPlaying(true);
-      }
-    }
-  };
-
   return (
     <View style={styles.container}>
       <Pressable
         onPress={handlePress}
         style={[styles.button, isPlaying ? styles.playing : styles.stopped]}
       >
-        <Text>{isPlaying ? "Pause Sound" : "Play Sound"}</Text>
+        <AnimatedCircularProgress
+          size={120}
+          width={10}
+          backgroundWidth={10}
+          fill={volume}
+          tintColor="#00ff00"
+          tintColorSecondary="#ff0000"
+          backgroundColor="#3d5875"
+          arcSweepAngle={240}
+          rotation={240}
+          lineCap="round"
+        />
+        <Text style={styles.text}>
+          {isPlaying ? "Pause Sound" : "Play Sound"}
+        </Text>
       </Pressable>
       <Modal
         animationType="slide"
@@ -130,28 +141,28 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f",
+    // backgroundColor: "#111",
     width: 150,
     height: 150,
-    borderRadius: 10,
+    borderRadius: 300,
     padding: 10,
   },
   button: {
     backgroundColor: "#ddd",
-    padding: 10,
-    borderRadius: 5,
+    // padding: 5,
+    borderRadius: 300,
   },
   playing: {
-    backgroundColor: "#f00", // Red when playing
+    backgroundColor: "#fff", // Red when playing
   },
   stopped: {
-    backgroundColor: "#0f0", // Green when stopped
+    backgroundColor: "#aaa", // Green when stopped
   },
   modalOverlay: {
     flex: 1,
     justifyContent: "flex-end",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
   },
   modalView: {
     margin: 20,
@@ -167,5 +178,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  text: {
+    position: "absolute",
+    top: "50%",
+    left: "25%",
+    textAlign: "center",
+    // transform: [{ translateX: -50 }, { translateY: -50 }],
   },
 });
